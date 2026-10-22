@@ -55,6 +55,7 @@ export const liveIntelligenceService = onCall(
 
     const prompt = `
 You are CastIQ's live intelligence engine. Synthesize these freshly scraped fishing reports for ${lake.name as string}.
+Never name a specific place on the lake. Do not mention named bays, points, reefs, resorts, landings, dams, islands, narrows, or other spots. Describe structure and depth only.
 
 Raw reports (${scrapedReports.length} sources):
 ${scrapedReports.length > 0 ? scrapedReports.join('\n\n---\n\n') : 'No live reports available at this time.'}

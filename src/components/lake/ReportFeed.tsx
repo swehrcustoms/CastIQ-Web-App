@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { SourceAttribution } from '../shared/SourceAttribution';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { formatReportAge } from '../../utils/reportRecencyColor';
-import { reportIdentity } from '../../utils/reportIdentity';
+import { redactNamedSpots } from '../../utils/reportCopy';
+import { reportIdentity, reportNote } from '../../utils/reportIdentity';
 import type { AnglerReport } from '../../types/user';
 
 interface Props {
@@ -37,8 +38,8 @@ function ReportCard({ report }: { report: AnglerReport }) {
       </div>
 
       {/* Summary */}
-      {report.aiSummary && (
-        <p className="text-sm text-castiq-white">{report.aiSummary}</p>
+      {reportNote(report) && (
+        <p className="text-sm text-castiq-white">{reportNote(report)}</p>
       )}
 
       {/* Details grid */}
@@ -56,8 +57,8 @@ function ReportCard({ report }: { report: AnglerReport }) {
       </div>
 
       {/* Conditions */}
-      {report.conditions && (
-        <p className="text-xs text-castiq-muted italic">{report.conditions}</p>
+      {report.structureType && redactNamedSpots(report.structureType) && (
+        <p className="text-xs text-castiq-muted italic">{redactNamedSpots(report.structureType)}</p>
       )}
 
       {/* Source */}

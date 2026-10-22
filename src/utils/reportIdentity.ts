@@ -1,5 +1,6 @@
 import type { AnglerReport } from '../types/user';
 import { toDate } from './dates';
+import { redactNamedSpots } from './reportCopy';
 import { canonicalSpecies } from './species';
 
 type DateLike = Parameters<typeof toDate>[0];
@@ -60,13 +61,15 @@ export function reportNote(report: Pick<AnglerReport, 'conditions' | 'aiSummary'
   const conditions = report.conditions?.trim() ?? '';
   const summary = report.aiSummary?.trim() ?? '';
   if (!conditions && !summary) return null;
-  if (!conditions || !summary) return conditions || summary;
   const left = conditions.toLowerCase();
   const right = summary.toLowerCase();
-  if (left === right || left.includes(right) || right.includes(left)) {
-    return conditions.length >= summary.length ? conditions : summary;
-  }
-  return `${conditions}\n${summary}`;
+  const note = !conditions || !summary
+    ? (conditions || summary)
+    : left === right || left.includes(right) || right.includes(left)
+      ? (conditions.length >= summary.length ? conditions : summary)
+      : `${conditions}\n${summary}`;
+  const cleaned = redactNamedSpots(note);
+  return cleaned || null;
 }
 
 export function uniqueReports<T extends AnglerReport>(reports: T[]): T[] {

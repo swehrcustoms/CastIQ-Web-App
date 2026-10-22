@@ -8,6 +8,7 @@ import { Collections } from '../services/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { useLakeSearch } from '../hooks/useLakeSearch';
 import { lakePlaceLabel } from '../services/dnrLakeSearch';
+import { redactNamedSpots } from '../utils/reportCopy';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { SPECIES_OPTIONS } from '../components/shared/SpeciesChips';
 import type { Lake } from '../types/lake';
@@ -142,7 +143,7 @@ export function SubmitReport() {
           .filter(Boolean),
         depthFt: depthFt ? Number(depthFt) : null,
         waterTempF: waterTempF ? Number(waterTempF) : null,
-        conditions: conditions.trim(),
+        conditions: redactNamedSpots(conditions.trim()),
         technique: technique.trim(),
         timeOfDay,
         aiSummary: '',
@@ -151,9 +152,9 @@ export function SubmitReport() {
         verified: false,
         upvotes: 0,
         photoUrl,
-        rawText: conditions.trim(),
+        rawText: redactNamedSpots(conditions.trim()),
         confidenceScore: 0,
-        structureType: structureType.trim() || null,
+        structureType: redactNamedSpots(structureType.trim()) || null,
         createdAt: now,
         updatedAt: now,
       });
@@ -298,7 +299,7 @@ export function SubmitReport() {
             onChange={(e) => setConditions(e.target.value)}
             rows={3}
             maxLength={500}
-            placeholder="Wind, cloud cover, bite timing…"
+            placeholder="Wind, cloud cover, bite timing, structure, and depth"
             className="w-full rounded-lg bg-castiq-blue px-4 py-3 text-sm text-castiq-white outline-none ring-1 ring-castiq-blue focus:ring-castiq-teal"
           />
         </label>
@@ -335,7 +336,7 @@ export function SubmitReport() {
           <input
             value={structureType}
             onChange={(e) => setStructureType(e.target.value)}
-            placeholder="Weedline, hump, point…"
+            placeholder="Weedline, hump, break…"
             className="w-full rounded-lg bg-castiq-blue px-4 py-3 text-sm text-castiq-white outline-none ring-1 ring-castiq-blue focus:ring-castiq-teal"
           />
         </label>

@@ -3,6 +3,8 @@ import { logger } from 'firebase-functions';
 import { getAnthropicClient, anthropicApiKey, MODEL } from '../utils/anthropicClient';
 import { AITaskSchema } from '../utils/validators';
 
+const SPOT_RULE = 'Never name a specific place on the lake. Do not mention named bays, points, reefs, resorts, landings, dams, islands, narrows, or other spots. Describe structure and depth only.';
+
 const PROMPTS = {
   lure_recommendation: (p: Record<string, unknown>) => `
 You are a professional fishing guide for Minnesota lakes with 20+ years of experience.
@@ -18,6 +20,8 @@ Lake context:
 
 Recent angler reports (last 5):
 ${(p.latestReports as string[]).join('\n')}
+
+${SPOT_RULE}
 
 Based on this data, provide:
 1. Top 3 lure recommendations (name, color, depth, technique)
@@ -45,6 +49,7 @@ ${(p.reports as string[]).join('\n')}
 
 Write a 2-3 paragraph digest in plain English that a Minnesota angler would find useful.
 Cover: what species are active, what's working, depth/structure patterns, and anything notable.
+${SPOT_RULE}
 Tone: knowledgeable, practical, like a trusted fishing buddy who's been watching the lake.
 Max 200 words.`.trim(),
 

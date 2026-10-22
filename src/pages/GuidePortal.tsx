@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getDocs, limit, orderBy, query, where } from '
 import { functions, db } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
+import { reportNote } from '../utils/reportIdentity';
 import type { Lake } from '../types/lake';
 import type { GuidePortalUser, AnglerReport } from '../types/user';
 import type { WithId } from '../types/common';
@@ -256,9 +257,9 @@ export function GuidePortal() {
                     {(r.species ?? []).join(', ')}
                   </span>
                 </div>
-                {(r.aiSummary || r.conditions) && (
+                {reportNote(r) && (
                   <p className="mt-1 text-xs text-castiq-muted">
-                    {r.aiSummary || r.conditions}
+                    {reportNote(r)}
                   </p>
                 )}
               </li>

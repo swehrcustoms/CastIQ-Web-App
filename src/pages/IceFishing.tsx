@@ -29,6 +29,11 @@ function caution(report: IceReport, date: Date | null): { label: string; classNa
   return { label: 'Conditions vary', className: 'text-castiq-yellow' };
 }
 
+function iceSeasonNow(date = new Date()): boolean {
+  const month = date.getMonth() + 1;
+  return month >= 11 || month <= 3;
+}
+
 function sourceLabel(submittedBy: string): string {
   if (!submittedBy) return 'Source not listed';
   if (submittedBy.length > 24 && !submittedBy.includes(' ')) return 'Angler report';
@@ -135,7 +140,9 @@ export function IceFishing() {
             <EmptyState
               title="No ice reports match."
               message={data.reports.length === 0
-                ? 'No ice thickness reports have been published yet. A report appears here as soon as it is saved.'
+                ? iceSeasonNow()
+                  ? 'No ice thickness reports have been published yet. A report appears here as soon as it is saved.'
+                  : 'There is no ice thickness to report in open-water season. A saved report shows up here once someone files one.'
                 : 'Try a wider freshness window or clear the filters.'}
             />
           ) : (

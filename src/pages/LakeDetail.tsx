@@ -150,6 +150,7 @@ export function LakeDetail() {
                 <SpeciesChips selected={selectedSpecies} onChange={setSelectedSpecies} options={lakeChips} />
                 <LakeOverview
                   species={selectedSpecies}
+                  speciesPresent={speciesForPage ?? []}
                   reports={visibleReports}
                   loading={reportsLoading}
                   error={reportsError}

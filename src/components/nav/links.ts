@@ -1,4 +1,11 @@
-export const TOP_LINKS = [
+export interface AppLink {
+  to: string;
+  label: string;
+  end?: boolean;
+}
+
+export const TOP_LINKS: AppLink[] = [
+  { to: '/', label: 'Home', end: true },
   { to: '/search', label: 'Search' },
   { to: '/ice', label: 'Ice' },
   { to: '/social', label: 'Social' },

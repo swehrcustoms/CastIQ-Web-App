@@ -23,6 +23,7 @@ export function AppNav() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.end}
               className={({ isActive }) =>
                 `flex min-h-14 flex-1 items-center justify-center px-1 text-center text-[11px] font-medium ${
                   isActive ? 'text-castiq-teal' : 'text-castiq-muted'

@@ -3,6 +3,7 @@ import test from 'node:test';
 import { chipsForLake, speciesShownForLake } from '../src/utils/species';
 import { pickRegulationHit } from '../src/services/dnrLakeSearch';
 import { compareLakesByLatestReport, compareSearchLakes, recencyFromReports } from '../src/utils/lakeSort';
+import { comprehensiveWriteup, redactNamedSpots } from '../src/utils/reportCopy';
 import { consolidatedReports, latestReportsBySpecies, reportNote, uniqueReports } from '../src/utils/reportIdentity';
 import {
   annualPricePerMonth,
@@ -203,6 +204,50 @@ test('one report that names two species is shown once', () => {
   assert.equal(cards.length, 1);
   assert.deepEqual(cards[0].species.sort(), ['sauger', 'walleye']);
   assert.equal(reportNote(report), report.conditions);
+});
+
+test('report notes drop named spots and keep structure', () => {
+  assert.equal(
+    redactNamedSpots('Walleye on Frazer Bay in 18 ft. Rocky points were quiet.'),
+    'Walleye in 18 ft. Rocky points were quiet.',
+  );
+  assert.equal(
+    redactNamedSpots('Fish at the Narrows. South shore mud was better.'),
+    'Fish. South shore mud was better.',
+  );
+  assert.equal(redactNamedSpots('Deep breaks adjacent to cabbage. Slow presentation.'), 'Deep breaks adjacent to cabbage. Slow presentation.');
+  assert.equal(
+    reportNote({
+      conditions: 'Limits on Frazer Point and at Black Bay.',
+      aiSummary: 'Limits on Frazer Point and at Black Bay.',
+    }),
+    'Limits on the point.',
+  );
+});
+
+test('a comprehensive report summarizes the saved fields without a spot name', () => {
+  const paragraph = comprehensiveWriteup(
+    {
+      structureType: 'breakline',
+      depthFt: 22,
+      waterTempF: 56,
+      timeOfDay: 'early morning',
+      technique: 'Slip bobber',
+      lures: ['leech', 'jig'],
+      colors: ['black'],
+    },
+    ['walleye'],
+    'Deep breaks adjacent to cabbage. Slow presentation. Best bite was in Frazer Bay.',
+  );
+  assert.ok(paragraph);
+  assert.match(paragraph ?? '', /Deep breaks adjacent to cabbage/);
+  assert.match(paragraph ?? '', /breakline/i);
+  assert.match(paragraph ?? '', /22 ft/);
+  assert.match(paragraph ?? '', /56°F/);
+  assert.match(paragraph ?? '', /early morning/);
+  assert.match(paragraph ?? '', /slip bobber/i);
+  assert.match(paragraph ?? '', /leech and jig/);
+  assert.doesNotMatch(paragraph ?? '', /Frazer|Bay/i);
 });
 
 test('a lake keeps the standard species order and drops species it does not have', () => {

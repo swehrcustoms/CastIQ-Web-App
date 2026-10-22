@@ -9,6 +9,8 @@ import { EmptyState, ErrorState, SkeletonGrid } from '../components/ui/States';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePublicReports } from '../hooks/usePublicReports';
 import { formatTimestamp, hoursSince, toDate } from '../utils/dates';
+import { redactNamedSpots } from '../utils/reportCopy';
+import { reportNote } from '../utils/reportIdentity';
 import { speciesLabel, speciesMatches } from '../utils/species';
 import type { AnglerReport } from '../types/user';
 import type { WithId } from '../types/common';
@@ -100,6 +102,8 @@ export function Social() {
 function ReportCard({ report }: { report: WithId<AnglerReport> }) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const date = toDate(report.reportDate);
+  const note = reportNote(report);
+  const structure = redactNamedSpots(report.structureType ?? '');
   return (
     <li>
       <AppCard>
@@ -121,10 +125,9 @@ function ReportCard({ report }: { report: WithId<AnglerReport> }) {
           ))}
         </div>
 
-        {report.aiSummary && (
+        {note && (
           <p className="mt-3 text-sm leading-relaxed text-castiq-white">
-            <span className="text-xs uppercase tracking-wide text-castiq-teal">AI summary · </span>
-            {report.aiSummary}
+            {note}
           </p>
         )}
 
@@ -133,7 +136,7 @@ function ReportCard({ report }: { report: WithId<AnglerReport> }) {
           {report.colors?.length > 0 && <Detail label="Color" value={report.colors.join(', ')} />}
           {report.depthFt != null && <Detail label="Depth" value={`${report.depthFt} ft`} />}
           {report.technique && <Detail label="Technique" value={report.technique} />}
-          {report.conditions && <Detail label="Conditions" value={report.conditions} />}
+          {structure && <Detail label="Structure" value={structure} />}
           {report.timeOfDay && <Detail label="Time" value={report.timeOfDay} />}
         </dl>
 
