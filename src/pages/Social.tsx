@@ -11,6 +11,9 @@ import { usePublicReports } from '../hooks/usePublicReports';
 import { formatTimestamp, hoursSince, toDate } from '../utils/dates';
 import { redactNamedSpots } from '../utils/reportCopy';
 import { reportNote } from '../utils/reportIdentity';
+import { canSeeReportDetail } from '../subscriptions/entitlements';
+import { currentAccessTier } from '../subscriptions/membership';
+import { UpgradeCard } from '../components/subscription/UpgradeCard';
 import { speciesLabel, speciesMatches } from '../utils/species';
 import type { AnglerReport } from '../types/user';
 import type { WithId } from '../types/common';
@@ -40,7 +43,7 @@ export function Social() {
       <PageHeader
         eyebrow="Community"
         title="What anglers are seeing"
-        subtitle="Public reports only. Patterns, lures, and conditions — not a photo feed."
+        subtitle="Public report dates and species. Lure, depth, and structure open with Standard or Premium."
         actions={
           <Link to="/submit-report" className="ciq-btn-primary">
             Share Fishing Report
@@ -104,6 +107,7 @@ function ReportCard({ report }: { report: WithId<AnglerReport> }) {
   const date = toDate(report.reportDate);
   const note = reportNote(report);
   const structure = redactNamedSpots(report.structureType ?? '');
+  const allowed = canSeeReportDetail(currentAccessTier(null));
   return (
     <li>
       <AppCard>
@@ -125,20 +129,26 @@ function ReportCard({ report }: { report: WithId<AnglerReport> }) {
           ))}
         </div>
 
-        {note && (
-          <p className="mt-3 text-sm leading-relaxed text-castiq-white">
-            {note}
-          </p>
+        {allowed ? (
+          <>
+            {note && (
+              <p className="mt-3 text-sm leading-relaxed text-castiq-white">{note}</p>
+            )}
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+              {report.lures?.length > 0 && <Detail label="Lure" value={report.lures.join(', ')} />}
+              {report.colors?.length > 0 && <Detail label="Color" value={report.colors.join(', ')} />}
+              {report.depthFt != null && <Detail label="Depth" value={`${report.depthFt} ft`} />}
+              {report.technique && <Detail label="Technique" value={report.technique} />}
+              {structure && <Detail label="Structure" value={structure} />}
+              {report.timeOfDay && <Detail label="Time" value={report.timeOfDay} />}
+            </dl>
+          </>
+        ) : (
+          <UpgradeCard
+            title="Full report detail is included with Standard"
+            detail="The date and species stay visible. Lure, depth, and structure open with Standard or Premium."
+          />
         )}
-
-        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {report.lures?.length > 0 && <Detail label="Lure" value={report.lures.join(', ')} />}
-          {report.colors?.length > 0 && <Detail label="Color" value={report.colors.join(', ')} />}
-          {report.depthFt != null && <Detail label="Depth" value={`${report.depthFt} ft`} />}
-          {report.technique && <Detail label="Technique" value={report.technique} />}
-          {structure && <Detail label="Structure" value={structure} />}
-          {report.timeOfDay && <Detail label="Time" value={report.timeOfDay} />}
-        </dl>
 
         {report.photoUrl && !photoFailed && (
           <img

@@ -9,6 +9,11 @@ export function hasFeature(tier: AccessTier, key: EntitlementKey): boolean {
   return tierHasEntitlement(tier, key);
 }
 
+/** Lures, depth, structure, the written report, and seasonal tactics. Free accounts do not receive these. */
+export function canSeeReportDetail(tier: AccessTier): boolean {
+  return hasFeature(tier, 'fishing_reports') && hasFeature(tier, 'reported_depths_lures_techniques') && hasFeature(tier, 'water_bottom_structure');
+}
+
 export function getEntitlements(tier: AccessTier): EntitlementKey[] {
   return (Object.keys(ENTITLEMENTS) as EntitlementKey[]).filter((key) => hasFeature(tier, key));
 }

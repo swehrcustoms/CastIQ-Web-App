@@ -5,7 +5,7 @@ import { planAlertDispatch } from '../src/subscriptions/alerts';
 import { applyBillingEvent, requestCheckout, tierFromSuccessUrl, type BillingState } from '../src/subscriptions/billing';
 import { assertCatalogMatchesApprovedPrices, PURCHASE_SKUS, skuById } from '../src/subscriptions/catalog';
 import { compareLakes, trendStatus } from '../src/subscriptions/compare';
-import { canSaveLake, getEntitlements, hasFeature } from '../src/subscriptions/entitlements';
+import { canSaveLake, canSeeReportDetail, getEntitlements, hasFeature } from '../src/subscriptions/entitlements';
 import { PRODUCTION_SUBSCRIPTION_FLAGS } from '../src/subscriptions/flags';
 import { PROPOSED_LIMITS } from '../src/subscriptions/limits';
 import { tierFromMembership, tierFromUntrustedClient, type MembershipRecord } from '../src/subscriptions/membership';
@@ -203,4 +203,19 @@ test('checkout stays disabled and webhooks do not trust the browser', () => {
   assert.equal(tierFromMembership(ended, NOW), 'free');
   assert.equal(tierFromMembership({ ...ended, status: 'pending' }, NOW), 'free');
   assert.equal(tierFromMembership({ ...ended, status: 'error' }, NOW), 'free');
+});
+
+test('free accounts do not receive lure, depth, structure, or the written report', () => {
+  assert.equal(canSeeReportDetail('free'), false);
+  assert.equal(canSeeReportDetail('standard'), true);
+  assert.equal(canSeeReportDetail('premium'), true);
+  const view = presentReport({
+    report: report('1', 'lake', 1),
+    tier: 'free',
+    now: NOW,
+    authenticated: true,
+    unlocks: [],
+  });
+  assert.equal(view.detail, 'locked');
+  assert.equal(view.paid, null);
 });

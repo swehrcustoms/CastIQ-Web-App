@@ -6,10 +6,8 @@ import { speciesLabel } from '../../utils/species';
 import { SourceAttribution } from '../shared/SourceAttribution';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { UpgradeCard } from '../subscription/UpgradeCard';
-import { useAuth } from '../../hooks/useAuth';
-import { subscriptionEnforcementEnabled } from '../../subscriptions/flags';
+import { canSeeReportDetail } from '../../subscriptions/entitlements';
 import { currentAccessTier } from '../../subscriptions/membership';
-import { presentReport, type ReportLike } from '../../subscriptions/reportAccess';
 import type { AnglerReport } from '../../types/user';
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -46,77 +44,11 @@ function recordedFields(report: AnglerReport, note: string | null): { label: str
   return fields;
 }
 
-function toReportLike(report: AnglerReport, note: string | null): ReportLike {
-  const reportDate = toDate(report.reportDate);
-  return {
-    reportId: report.reportId,
-    lakeId: report.lakeId,
-    species: report.species ?? [],
-    observedAt: reportDate ? reportDate.getTime() : null,
-    source: report.sourceId,
-    lures: report.lures ?? [],
-    colors: report.colors ?? [],
-    depthFt: report.depthFt,
-    waterTempF: report.waterTempF,
-    technique: report.technique ?? '',
-    timeOfDay: report.timeOfDay ?? '',
-    structureType: report.structureType,
-    conditions: report.conditions ?? '',
-    note,
-  };
-}
-
 function SpeciesReport({ species, report }: { species: string[]; report: AnglerReport }) {
-  const { user } = useAuth();
   const reportDate = toDate(report.reportDate);
   const note = reportNote(report);
   const fields = recordedFields(report, note);
-  const enforced = subscriptionEnforcementEnabled();
-  if (enforced) {
-    const view = presentReport({
-      report: toReportLike(report, note),
-      tier: currentAccessTier(null),
-      now: Date.now(),
-      authenticated: Boolean(user),
-      unlocks: [],
-    });
-    const title = species
-      .filter((name) => name !== 'unspecified')
-      .map((name) => speciesLabel(name))
-      .join(', ') || 'Species not listed';
-    return (
-      <article className="rounded-lg bg-castiq-blue p-4">
-        <h2 className="text-sm font-semibold text-castiq-white">{title}</h2>
-        <p className="mt-1 text-xs text-castiq-muted">
-          Latest report {formatRelative(reportDate)} · {formatTimestamp(reportDate)}
-          {view.olderThanWindow && view.detail === 'full' ? ' · Older than 30 days' : ''}
-        </p>
-        {view.detail === 'full' && view.paid ? (
-          <>
-            {view.paid.note && <p className="mt-3 text-sm text-castiq-white">{view.paid.note}</p>}
-            {fields.length > 0 && (
-              <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {fields.map((field) => (
-                  <Field key={field.label} label={field.label} value={field.value} />
-                ))}
-              </dl>
-            )}
-          </>
-        ) : (
-          <UpgradeCard
-            title={view.lock?.code === 'sign_in' ? 'Sign in to open the full report' : 'Full report detail is a Standard benefit'}
-            detail="Dates stay visible. Lures, depth, temperature, and structure stay hidden until an entitled unlock. The server ledger is not deployed, so this button does not spend a credit."
-          />
-        )}
-        <div className="mt-3">
-          <SourceAttribution
-            sourceName={report.sourceId ?? (report.userSubmitted ? 'Angler report' : 'Unknown')}
-            type={report.userSubmitted ? 'user' : 'RSS'}
-          />
-        </div>
-      </article>
-    );
-  }
+  const allowed = canSeeReportDetail(currentAccessTier(null));
   const title = species
     .filter((name) => name !== 'unspecified')
     .map((name) => speciesLabel(name))
@@ -128,13 +60,22 @@ function SpeciesReport({ species, report }: { species: string[]; report: AnglerR
       <p className="mt-1 text-xs text-castiq-muted">
         Latest report {formatRelative(reportDate)} · {formatTimestamp(reportDate)}
       </p>
-      {note && <p className="mt-3 text-sm text-castiq-white">{note}</p>}
-      {fields.length > 0 && (
-        <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {fields.map((field) => (
-            <Field key={field.label} label={field.label} value={field.value} />
-          ))}
-        </dl>
+      {allowed ? (
+        <>
+          {note && <p className="mt-3 text-sm text-castiq-white">{note}</p>}
+          {fields.length > 0 && (
+            <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {fields.map((field) => (
+                <Field key={field.label} label={field.label} value={field.value} />
+              ))}
+            </dl>
+          )}
+        </>
+      ) : (
+        <UpgradeCard
+          title="Full report detail is included with Standard"
+          detail="The date and species stay visible. Lure, depth, structure, and the written report open with Standard or Premium."
+        />
       )}
       <div className="mt-3">
         <SourceAttribution
@@ -162,11 +103,12 @@ export function LakeOverview({
   const latest = consolidatedReports(reports);
   const season = guideSeason();
   const plans = plansForSpecies(speciesPresent, season, species);
-  const writeups = subscriptionEnforcementEnabled()
-    ? []
-    : latest
+  const allowed = canSeeReportDetail(currentAccessTier(null));
+  const writeups = allowed
+    ? latest
         .map((item) => comprehensiveWriteup(item.report, item.species, reportNote(item.report)))
-        .filter((paragraph): paragraph is string => Boolean(paragraph));
+        .filter((paragraph): paragraph is string => Boolean(paragraph))
+    : [];
 
   return (
     <div className="space-y-4">
@@ -203,6 +145,8 @@ export function LakeOverview({
       {!loading && plans.length > 0 && (
         <section className="rounded-lg bg-castiq-blue p-4">
           <h2 className="text-sm font-semibold text-castiq-white">Tactics</h2>
+          {allowed ? (
+            <>
           <p className="mt-1 text-xs text-castiq-muted">
             {seasonLabel(season)} top 3 for {species === 'all' ? 'the species on this lake' : speciesLabel(species).toLowerCase()}. Same list as the Tactics page.
           </p>
@@ -223,6 +167,13 @@ export function LakeOverview({
               </div>
             ))}
           </div>
+            </>
+          ) : (
+            <UpgradeCard
+              title="Seasonal tactics are included with Standard"
+              detail="The species list stays visible. The top presentations for this lake open with Standard or Premium."
+            />
+          )}
         </section>
       )}
     </div>

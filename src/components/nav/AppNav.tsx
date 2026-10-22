@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { IconClose } from '../ui/Icons';
-import { MORE_LINKS, TOP_LINKS } from './links';
+import { MORE_LINKS, TOP_LINKS, type AppLink } from './links';
 
 export function AppNav() {
   const location = useLocation();
@@ -15,7 +15,7 @@ export function AppNav() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-castiq-blue-dark md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-castiq-blue-dark lg:hidden"
         aria-label="Primary"
       >
         <div className="flex">
@@ -51,6 +51,36 @@ export function AppNav() {
   );
 }
 
+function MoreItem({
+  link,
+  previous,
+  onClose,
+  active,
+}: {
+  link: AppLink;
+  previous?: AppLink;
+  onClose: () => void;
+  active: boolean;
+}) {
+  const showSection = link.section && link.section !== previous?.section;
+  return (
+    <li>
+      {showSection && (
+        <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-castiq-muted">{link.section}</p>
+      )}
+      <NavLink
+        to={link.to}
+        onClick={onClose}
+        className={`block rounded-lg px-3 py-3 text-sm font-medium ${
+          active ? 'text-castiq-white' : 'text-castiq-muted hover:bg-castiq-blue hover:text-castiq-white'
+        }`}
+      >
+        {link.label}
+      </NavLink>
+    </li>
+  );
+}
+
 function MoreDialog({ onClose }: { onClose: () => void }) {
   const location = useLocation();
   const ref = useRef<HTMLDialogElement>(null);
@@ -81,18 +111,8 @@ function MoreDialog({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <ul className="p-2">
-        {MORE_LINKS.map((link) => (
-          <li key={link.to}>
-            <NavLink
-              to={link.to}
-              onClick={onClose}
-              className={`block rounded-lg px-3 py-3 text-sm font-medium ${
-                location.pathname === link.to ? 'text-castiq-teal' : 'text-castiq-white hover:bg-castiq-blue'
-              }`}
-            >
-              {link.label}
-            </NavLink>
-          </li>
+        {MORE_LINKS.map((link, index) => (
+          <MoreItem key={link.to} link={link} previous={MORE_LINKS[index - 1]} onClose={onClose} active={location.pathname === link.to} />
         ))}
       </ul>
     </dialog>

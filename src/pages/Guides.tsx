@@ -9,6 +9,9 @@ import { useLakeSearch } from '../hooks/useLakeSearch';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { lakePlaceLabel } from '../services/dnrLakeSearch';
 import { guideSeason, plansForSpecies, seasonLabel, speciesMatchesBait } from '../data/baitSuggestions';
+import { canSeeReportDetail } from '../subscriptions/entitlements';
+import { currentAccessTier } from '../subscriptions/membership';
+import { UpgradeCard } from '../components/subscription/UpgradeCard';
 import type { Lake } from '../types/lake';
 import type { WithId } from '../types/common';
 
@@ -40,6 +43,7 @@ function lakeMatchesQuery(lake: WithId<Lake>, query: string): boolean {
 
 function GuideLakeCard({ lake, species, season }: { lake: WithId<Lake>; species: string; season: ReturnType<typeof guideSeason> }) {
   const plans = plansForSpecies(lake.speciesPresent ?? [], season, species);
+  const allowed = canSeeReportDetail(currentAccessTier(null));
   return (
     <li>
       <AppCard className="h-full">
@@ -60,6 +64,11 @@ function GuideLakeCard({ lake, species, season }: { lake: WithId<Lake>; species:
           <p className="mt-3 text-sm text-castiq-muted">
             No species list is on file for this water yet, so there isn’t a bait list to show.
           </p>
+        ) : !allowed ? (
+          <UpgradeCard
+            title="Seasonal tactics are included with Standard"
+            detail="Lake names stay visible. The lure list for this water opens with Standard or Premium."
+          />
         ) : (
           <div className="mt-4 space-y-4">
             {plans.map((plan) => (

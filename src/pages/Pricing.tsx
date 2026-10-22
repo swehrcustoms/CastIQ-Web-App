@@ -52,7 +52,7 @@ export function Pricing() {
               <li>Ice safety guidance and official source links</li>
             </ul>
             <p className="mt-4 text-sm font-medium text-castiq-white">No renewal</p>
-            <p className="mt-5 text-sm text-castiq-muted">Included while billing is closed. Proposed full-report limits are off.</p>
+            <p className="mt-5 text-sm text-castiq-muted">Lure, depth, structure, the written report, and seasonal tactics stay on Standard and Premium.</p>
           </AppCard>
         </li>
         {PLANS.map((plan) => {
@@ -113,7 +113,7 @@ export function Pricing() {
       <section className="mt-8" aria-labelledby="plan-access">
         <h2 id="plan-access" className="text-sm font-semibold text-castiq-white">What each plan can open</h2>
         <p className="mt-1 text-xs text-castiq-muted">
-          Monthly and annual copies of a plan open the same features. The number limits below are proposed and are not turned on.
+          Monthly and annual copies of a plan open the same features. Full report detail is Standard and Premium. Saved-lake number caps below are proposed and are not turned on.
         </p>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[36rem] text-left text-sm text-castiq-white">
@@ -128,7 +128,7 @@ export function Pricing() {
             <tbody>
               <tr className="border-t border-white/10"><td className="py-2 pr-3">Lake search</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
               <tr className="border-t border-white/10"><td className="py-2 pr-3">Report dates and sources</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
-              <tr className="border-t border-white/10"><td className="py-2 pr-3">Full report detail</td><td>Proposed: 3 / 30 days</td><td>Eligible reports</td><td>Retained reports</td></tr>
+              <tr className="border-t border-white/10"><td className="py-2 pr-3">Full report detail</td><td>Not included</td><td>Included</td><td>Included</td></tr>
               <tr className="border-t border-white/10"><td className="py-2 pr-3">Saved lakes</td><td>Proposed: 2</td><td>Proposed: 10</td><td>Unlimited</td></tr>
               <tr className="border-t border-white/10"><td className="py-2 pr-3">Ice safety</td><td>Always</td><td>Always</td><td>Always</td></tr>
               <tr className="border-t border-white/10"><td className="py-2 pr-3">Compare lakes and trends</td><td>No</td><td>No</td><td>When the data supports it</td></tr>

@@ -6,6 +6,9 @@ import { IceFishing } from './pages/IceFishing';
 import { Pricing } from './pages/Pricing';
 import { Guides } from './pages/Guides';
 import { About } from './pages/About';
+import { Features } from './pages/Features';
+import { HowItWorks } from './pages/HowItWorks';
+import { Faq } from './pages/Faq';
 import { Social } from './pages/Social';
 import { BorderWaters } from './pages/BorderWaters';
 import { Regulations } from './pages/Regulations';
@@ -32,7 +35,7 @@ function SiteShell() {
   return (
     <div className="flex min-h-dvh flex-col bg-castiq-blue-dark">
       <AppHeader />
-      <main className={hideNav ? 'flex-1' : 'flex-1 pb-20 md:pb-8'}>
+      <main className={hideNav ? 'flex-1' : 'flex-1 pb-20 lg:pb-8'}>
         <Outlet />
       </main>
       {!hideNav && <AppNav />}
@@ -59,6 +62,9 @@ export default function App() {
           <Route path="/tactics" element={<Guides />} />
           <Route path="/guides" element={<Navigate to="/tactics" replace />} />
           <Route path="/about" element={<About />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/faq" element={<Faq />} />
           <Route path="/social" element={<Social />} />
           <Route path="/border-waters" element={<BorderWaters />} />
           <Route path="/regulations" element={<Regulations />} />

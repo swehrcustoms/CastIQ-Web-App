@@ -4,6 +4,9 @@ import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { formatReportAge } from '../../utils/reportRecencyColor';
 import { redactNamedSpots } from '../../utils/reportCopy';
 import { reportIdentity, reportNote } from '../../utils/reportIdentity';
+import { UpgradeCard } from '../subscription/UpgradeCard';
+import { canSeeReportDetail } from '../../subscriptions/entitlements';
+import { currentAccessTier } from '../../subscriptions/membership';
 import type { AnglerReport } from '../../types/user';
 
 interface Props {
@@ -38,27 +41,32 @@ function ReportCard({ report }: { report: AnglerReport }) {
       </div>
 
       {/* Summary */}
-      {reportNote(report) && (
-        <p className="text-sm text-castiq-white">{reportNote(report)}</p>
-      )}
-
-      {/* Details grid */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-castiq-muted sm:grid-cols-3">
-        {(report.lures ?? []).length > 0 && (
-          <span>🎣 {report.lures.join(', ')}</span>
-        )}
-        {(report.colors ?? []).length > 0 && (
-          <span>🎨 {report.colors.join(', ')}</span>
-        )}
-        {report.depthFt && <span>📏 {report.depthFt} ft</span>}
-        {report.waterTempF && <span>🌡 {report.waterTempF}°F</span>}
-        {report.technique && <span>⚡ {report.technique}</span>}
-        {report.timeOfDay && <span>🕐 {report.timeOfDay}</span>}
-      </div>
-
-      {/* Conditions */}
-      {report.structureType && redactNamedSpots(report.structureType) && (
-        <p className="text-xs text-castiq-muted italic">{redactNamedSpots(report.structureType)}</p>
+      {canSeeReportDetail(currentAccessTier(null)) ? (
+        <>
+          {reportNote(report) && (
+            <p className="text-sm text-castiq-white">{reportNote(report)}</p>
+          )}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-castiq-muted sm:grid-cols-3">
+            {(report.lures ?? []).length > 0 && (
+              <span>🎣 {report.lures.join(', ')}</span>
+            )}
+            {(report.colors ?? []).length > 0 && (
+              <span>🎨 {report.colors.join(', ')}</span>
+            )}
+            {report.depthFt && <span>📏 {report.depthFt} ft</span>}
+            {report.waterTempF && <span>🌡 {report.waterTempF}°F</span>}
+            {report.technique && <span>⚡ {report.technique}</span>}
+            {report.timeOfDay && <span>🕐 {report.timeOfDay}</span>}
+          </div>
+          {report.structureType && redactNamedSpots(report.structureType) && (
+            <p className="text-xs text-castiq-muted italic">{redactNamedSpots(report.structureType)}</p>
+          )}
+        </>
+      ) : (
+        <UpgradeCard
+          title="Full report detail is included with Standard"
+          detail="The date and species stay visible. Lure, depth, and structure open with Standard or Premium."
+        />
       )}
 
       {/* Source */}
