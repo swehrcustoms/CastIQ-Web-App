@@ -11,6 +11,7 @@ import { saveAlertPreferences, saveDisplayName, setFavoriteLake } from '../servi
 import { signOutUser } from '../services/auth';
 import { formatRelative, toDate } from '../utils/dates';
 import { speciesLabel } from '../utils/species';
+import { planName, tierForViewer } from '../subscriptions/staffAccess';
 import { SPECIES_OPTIONS } from '../components/shared/SpeciesChips';
 import type { CastIQUser } from '../types/user';
 
@@ -43,6 +44,7 @@ export function Profile() {
 
   const name = profile?.displayName || user.displayName || 'Angler';
   const initial = name.charAt(0).toUpperCase();
+  const tier = tierForViewer(user.email);
 
   return (
     <PageContainer>
@@ -64,8 +66,14 @@ export function Profile() {
           <div className="min-w-0 flex-1">
             <NameEditor current={name} />
             <p className="mt-2 text-sm text-castiq-muted">{user.email}</p>
-            <p className="mt-1 text-sm text-castiq-white">Current plan: Free</p>
-            <p className="text-xs text-castiq-muted">CastIQ is not charging. Report detail and saved lakes are not limited until enforcement is approved.</p>
+            <p className="mt-1 text-sm text-castiq-white">Current plan: {planName(tier)}</p>
+            <p className="text-xs text-castiq-muted">
+              {tier === 'premium'
+                ? 'Every finished report, tactic, and lake detail is open on this account.'
+                : tier === 'standard'
+                  ? 'Fishing reports, lures, depth, structure, and seasonal tactics are open on this account.'
+                  : 'Lure, depth, structure, the written report, and seasonal tactics are Standard and Premium.'}
+            </p>
           </div>
         </section>
 

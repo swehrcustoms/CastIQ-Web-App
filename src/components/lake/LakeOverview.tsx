@@ -6,8 +6,7 @@ import { speciesLabel } from '../../utils/species';
 import { SourceAttribution } from '../shared/SourceAttribution';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { UpgradeCard } from '../subscription/UpgradeCard';
-import { canSeeReportDetail } from '../../subscriptions/entitlements';
-import { currentAccessTier } from '../../subscriptions/membership';
+import { useReportAccess } from '../../hooks/useReportAccess';
 import type { AnglerReport } from '../../types/user';
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -44,11 +43,10 @@ function recordedFields(report: AnglerReport, note: string | null): { label: str
   return fields;
 }
 
-function SpeciesReport({ species, report }: { species: string[]; report: AnglerReport }) {
+function SpeciesReport({ species, report, allowed }: { species: string[]; report: AnglerReport; allowed: boolean }) {
   const reportDate = toDate(report.reportDate);
   const note = reportNote(report);
   const fields = recordedFields(report, note);
-  const allowed = canSeeReportDetail(currentAccessTier(null));
   const title = species
     .filter((name) => name !== 'unspecified')
     .map((name) => speciesLabel(name))
@@ -103,7 +101,7 @@ export function LakeOverview({
   const latest = consolidatedReports(reports);
   const season = guideSeason();
   const plans = plansForSpecies(speciesPresent, season, species);
-  const allowed = canSeeReportDetail(currentAccessTier(null));
+  const allowed = useReportAccess();
   const writeups = allowed
     ? latest
         .map((item) => comprehensiveWriteup(item.report, item.species, reportNote(item.report)))
@@ -130,7 +128,7 @@ export function LakeOverview({
         </p>
       )}
       {!loading && !error && latest.map((item) => (
-        <SpeciesReport key={`${item.species.join('-')}-${item.report.reportId}`} species={item.species} report={item.report} />
+        <SpeciesReport key={`${item.species.join('-')}-${item.report.reportId}`} species={item.species} report={item.report} allowed={allowed} />
       ))}
       {!loading && !error && writeups.length > 0 && (
         <section className="rounded-lg bg-castiq-blue p-4">

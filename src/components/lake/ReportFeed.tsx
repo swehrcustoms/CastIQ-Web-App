@@ -5,8 +5,7 @@ import { formatReportAge } from '../../utils/reportRecencyColor';
 import { redactNamedSpots } from '../../utils/reportCopy';
 import { reportIdentity, reportNote } from '../../utils/reportIdentity';
 import { UpgradeCard } from '../subscription/UpgradeCard';
-import { canSeeReportDetail } from '../../subscriptions/entitlements';
-import { currentAccessTier } from '../../subscriptions/membership';
+import { useReportAccess } from '../../hooks/useReportAccess';
 import type { AnglerReport } from '../../types/user';
 
 interface Props {
@@ -18,7 +17,7 @@ interface Props {
 
 const PAGE = 10;
 
-function ReportCard({ report }: { report: AnglerReport }) {
+function ReportCard({ report, allowed }: { report: AnglerReport; allowed: boolean }) {
   const reportDate = report.reportDate
     ? (report.reportDate as unknown as { toDate?: () => Date }).toDate?.() ?? new Date()
     : new Date();
@@ -41,7 +40,7 @@ function ReportCard({ report }: { report: AnglerReport }) {
       </div>
 
       {/* Summary */}
-      {canSeeReportDetail(currentAccessTier(null)) ? (
+      {allowed ? (
         <>
           {reportNote(report) && (
             <p className="text-sm text-castiq-white">{reportNote(report)}</p>
@@ -79,6 +78,7 @@ function ReportCard({ report }: { report: AnglerReport }) {
 }
 
 export function ReportFeed({ reports, loading, error, mode = 'list' }: Props) {
+  const allowed = useReportAccess();
   const [visibleCount, setVisibleCount] = useState(PAGE);
   const visible = mode === 'latest' ? reports.slice(0, 1) : reports.slice(0, visibleCount);
   const hasMore = visibleCount < reports.length;
@@ -110,7 +110,7 @@ export function ReportFeed({ reports, loading, error, mode = 'list' }: Props) {
   return (
     <div className="space-y-3">
       {visible.map((r) => (
-        <ReportCard key={reportIdentity(r)} report={r} />
+        <ReportCard key={reportIdentity(r)} report={r} allowed={allowed} />
       ))}
       {mode === 'list' && hasMore && (
         <button

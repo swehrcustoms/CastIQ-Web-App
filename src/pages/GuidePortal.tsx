@@ -6,8 +6,7 @@ import { functions, db } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { reportNote } from '../utils/reportIdentity';
-import { canSeeReportDetail } from '../subscriptions/entitlements';
-import { currentAccessTier } from '../subscriptions/membership';
+import { useReportAccess } from '../hooks/useReportAccess';
 import type { Lake } from '../types/lake';
 import type { GuidePortalUser, AnglerReport } from '../types/user';
 import type { WithId } from '../types/common';
@@ -27,6 +26,7 @@ const guidePortalFn = httpsCallable<
 
 export function GuidePortal() {
   const { user, profile } = useAuth();
+  const canSeeReports = useReportAccess();
   const [guide, setGuide] = useState<WithId<GuidePortalUser> | null>(null);
   const [lakes, setLakes] = useState<(Lake & { id: string })[]>([]);
   const [reports, setReports] = useState<AnglerReport[]>([]);
@@ -259,7 +259,7 @@ export function GuidePortal() {
                     {(r.species ?? []).join(', ')}
                   </span>
                 </div>
-                {canSeeReportDetail(currentAccessTier(null)) && reportNote(r) && (
+                {canSeeReports && reportNote(r) && (
                   <p className="mt-1 text-xs text-castiq-muted">
                     {reportNote(r)}
                   </p>

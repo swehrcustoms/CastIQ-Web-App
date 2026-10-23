@@ -6,6 +6,7 @@ import { applyBillingEvent, requestCheckout, tierFromSuccessUrl, type BillingSta
 import { assertCatalogMatchesApprovedPrices, PURCHASE_SKUS, skuById } from '../src/subscriptions/catalog';
 import { compareLakes, trendStatus } from '../src/subscriptions/compare';
 import { canSaveLake, canSeeReportDetail, getEntitlements, hasFeature } from '../src/subscriptions/entitlements';
+import { hasFullAccess, planName, tierForViewer } from '../src/subscriptions/staffAccess';
 import { PRODUCTION_SUBSCRIPTION_FLAGS } from '../src/subscriptions/flags';
 import { PROPOSED_LIMITS } from '../src/subscriptions/limits';
 import { tierFromMembership, tierFromUntrustedClient, type MembershipRecord } from '../src/subscriptions/membership';
@@ -218,4 +219,19 @@ test('free accounts do not receive lure, depth, structure, or the written report
   });
   assert.equal(view.detail, 'locked');
   assert.equal(view.paid, null);
+});
+
+test('Ryan partner emails stay on their assigned plans', () => {
+  assert.equal(tierForViewer('Ryan@castIqfishing.com'), 'premium');
+  assert.equal(hasFullAccess(' ryan@castiqfishing.com '), true);
+  assert.equal(planName(tierForViewer('ryan+free@castiqfishing.com')), 'Free');
+  assert.equal(canSeeReportDetail(tierForViewer('ryan+free@castiqfishing.com')), false);
+  assert.equal(tierForViewer('ryan+standard@castiqfishing.com'), 'standard');
+  assert.equal(canSeeReportDetail(tierForViewer('ryan+standard@castiqfishing.com')), true);
+  assert.equal(hasFeature(tierForViewer('ryan+standard@castiqfishing.com'), 'historical_fishing_trends'), false);
+  assert.equal(tierForViewer('ryan+premium@castiqfishing.com'), 'premium');
+  assert.equal(canSeeReportDetail(tierForViewer('ryan+premium@castiqfishing.com')), true);
+  assert.equal(hasFeature(tierForViewer('ryan+premium@castiqfishing.com'), 'historical_fishing_trends'), true);
+  assert.equal(tierForViewer('someone@example.com'), 'free');
+  assert.equal(canSeeReportDetail(tierForViewer(null)), false);
 });

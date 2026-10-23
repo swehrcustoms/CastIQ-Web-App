@@ -9,9 +9,8 @@ import { useLakeSearch } from '../hooks/useLakeSearch';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { lakePlaceLabel } from '../services/dnrLakeSearch';
 import { guideSeason, plansForSpecies, seasonLabel, speciesMatchesBait } from '../data/baitSuggestions';
-import { canSeeReportDetail } from '../subscriptions/entitlements';
-import { currentAccessTier } from '../subscriptions/membership';
 import { UpgradeCard } from '../components/subscription/UpgradeCard';
+import { useReportAccess } from '../hooks/useReportAccess';
 import type { Lake } from '../types/lake';
 import type { WithId } from '../types/common';
 
@@ -41,9 +40,8 @@ function lakeMatchesQuery(lake: WithId<Lake>, query: string): boolean {
   return haystack.includes(needle);
 }
 
-function GuideLakeCard({ lake, species, season }: { lake: WithId<Lake>; species: string; season: ReturnType<typeof guideSeason> }) {
+function GuideLakeCard({ lake, species, season, allowed }: { lake: WithId<Lake>; species: string; season: ReturnType<typeof guideSeason>; allowed: boolean }) {
   const plans = plansForSpecies(lake.speciesPresent ?? [], season, species);
-  const allowed = canSeeReportDetail(currentAccessTier(null));
   return (
     <li>
       <AppCard className="h-full">
@@ -96,6 +94,7 @@ function GuideLakeCard({ lake, species, season }: { lake: WithId<Lake>; species:
 }
 
 export function Guides() {
+  const allowed = useReportAccess();
   const [query, setQuery] = useState('');
   const [species, setSpecies] = useState('all');
   const [area, setArea] = useState<AreaId>('all');
@@ -176,7 +175,7 @@ export function Guides() {
           ) : (
             <ul className="grid gap-3 lg:grid-cols-2">
               {lakes.map((lake) => (
-                <GuideLakeCard key={lake.id} lake={lake} species={species} season={season} />
+                <GuideLakeCard key={lake.id} lake={lake} species={species} season={season} allowed={allowed} />
               ))}
             </ul>
           )}

@@ -11,9 +11,8 @@ import { usePublicReports } from '../hooks/usePublicReports';
 import { formatTimestamp, hoursSince, toDate } from '../utils/dates';
 import { redactNamedSpots } from '../utils/reportCopy';
 import { reportNote } from '../utils/reportIdentity';
-import { canSeeReportDetail } from '../subscriptions/entitlements';
-import { currentAccessTier } from '../subscriptions/membership';
 import { UpgradeCard } from '../components/subscription/UpgradeCard';
+import { useReportAccess } from '../hooks/useReportAccess';
 import { speciesLabel, speciesMatches } from '../utils/species';
 import type { AnglerReport } from '../types/user';
 import type { WithId } from '../types/common';
@@ -21,6 +20,7 @@ import type { WithId } from '../types/common';
 type WindowFilter = 'any' | '7d' | '30d';
 
 export function Social() {
+  const allowed = useReportAccess();
   const { reports, loading, loadingMore, hasMore, error, loadMore, reload } = usePublicReports();
   const [lake, setLake] = useState('');
   const [species, setSpecies] = useState('all');
@@ -86,7 +86,7 @@ export function Social() {
       {!loading && !error && visible.length > 0 && (
         <ul className="space-y-3">
           {visible.map((report) => (
-            <ReportCard key={report.id} report={report} />
+            <ReportCard key={report.id} report={report} allowed={allowed} />
           ))}
         </ul>
       )}
@@ -102,12 +102,11 @@ export function Social() {
   );
 }
 
-function ReportCard({ report }: { report: WithId<AnglerReport> }) {
+function ReportCard({ report, allowed }: { report: WithId<AnglerReport>; allowed: boolean }) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const date = toDate(report.reportDate);
   const note = reportNote(report);
   const structure = redactNamedSpots(report.structureType ?? '');
-  const allowed = canSeeReportDetail(currentAccessTier(null));
   return (
     <li>
       <AppCard>
